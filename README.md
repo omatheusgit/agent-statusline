@@ -1,6 +1,6 @@
 # 🛩️ cockpit-nav
 
-Minha statusline do [Claude Code](https://claude.com/claude-code) no Ubuntu.
+Minha statusline do [Claude Code](https://claude.com/claude-code) e [Antigravity CLI](https://antigravity.google) no Ubuntu.
 
 Mostra em 3 linhas o que eu preciso sem sair do terminal: modelo e esforço,
 contexto já usado, custo da sessão, os limites de 5h e 7 dias **com o tempo que
@@ -13,6 +13,8 @@ falta pra resetar**, e a pasta e branch onde estou.
 Precisa de `jq`, `node` ou `python3` pra ler o JSON (qualquer um serve), e de uma
 [Nerd Font](https://www.nerdfonts.com/font-downloads) pros ícones de branch e relógio.
 
+### Claude Code
+
 ```bash
 cp statusline.sh ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh
 ```
@@ -22,6 +24,28 @@ Adicione no `~/.claude/settings.json` e reinicie o Claude Code:
 ```json
 "statusLine": { "type": "command", "command": "/home/SEU_USUARIO/.claude/statusline.sh" }
 ```
+
+### Antigravity CLI (`agy`)
+
+```bash
+cp statusline.sh ~/.gemini/antigravity-cli/statusline.sh && chmod +x ~/.gemini/antigravity-cli/statusline.sh
+```
+
+Adicione no `~/.gemini/antigravity-cli/settings.json`:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "/home/SEU_USUARIO/.gemini/antigravity-cli/statusline.sh"
+}
+```
+
+Ou configure direto dentro do CLI interativo:
+```text
+/statusline /home/SEU_USUARIO/.gemini/antigravity-cli/statusline.sh
+```
+
+### Customização
 
 Dá pra ajustar largura da barra, glifos e ícones por variável de ambiente — está
 comentado no topo do `statusline.sh`.

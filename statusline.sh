@@ -282,12 +282,18 @@ __reset_in() {
 # =============================================================================
 #  LINHA 1 - identica a do Cockpit: chip do modelo, esforco, contexto, custo.
 # =============================================================================
-__emit "$C_MODEL" " $(__field 'model.display_name') "
+__model="$(__field 'model.display_name')"
+[ -z "$__model" ] && __model="$(__field 'model.id')"
+[ -z "$__model" ] && __model="$(__field 'model')"
+__emit "$C_MODEL" " $__model "
 
+__lvl=""
 if [ "$(__field 'thinking.enabled')" = 'true' ]; then
   __lvl="$(__field 'effort.level')"
-  [ -n "$__lvl" ] && __emit '' " | $__lvl"
+elif [ -n "$(__field 'model.effort')" ]; then
+  __lvl="$(__field 'model.effort')"
 fi
+[ -n "$__lvl" ] && __emit '' " | $__lvl"
 
 __ctx_pct="$(__field 'context_window.used_percentage')"
 __emit '' '  '
@@ -304,22 +310,48 @@ __emit '' "$(__bar "$__ctx_pct" "$BAR_W" "$G_FILL" "$G_EMPTY")"
 # =============================================================================
 __p5="$(__field 'rate_limits.five_hour.used_percentage')"
 __p7="$(__field 'rate_limits.seven_day.used_percentage')"
+__r5_raw="$(__field 'rate_limits.five_hour.resets_at')"
+__r7_raw="$(__field 'rate_limits.seven_day.resets_at')"
+
+# Suporte universal (ex.: Antigravity / Gemini CLI usam .quota)
+if [ -z "$__p5" ] && [ -z "$__p7" ]; then
+  __rem5="$(__field 'quota.gemini-5h.remaining_fraction')"
+  [ -z "$__rem5" ] && __rem5="$(__field 'quota.3p-5h.remaining_fraction')"
+  if [ -n "$__rem5" ]; then
+    __p5="$(awk -v r="$__rem5" 'BEGIN { printf "%d", int((1 - r) * 100 + 0.5) }')"
+    __r5_raw="$(__field 'quota.gemini-5h.reset_time')"
+    [ -z "$__r5_raw" ] && __r5_raw="$(__field 'quota.3p-5h.reset_time')"
+  fi
+
+  __rem7="$(__field 'quota.gemini-weekly.remaining_fraction')"
+  [ -z "$__rem7" ] && __rem7="$(__field 'quota.3p-weekly.remaining_fraction')"
+  if [ -n "$__rem7" ]; then
+    __p7="$(awk -v r="$__rem7" 'BEGIN { printf "%d", int((1 - r) * 100 + 0.5) }')"
+    __r7_raw="$(__field 'quota.gemini-weekly.reset_time')"
+    [ -z "$__r7_raw" ] && __r7_raw="$(__field 'quota.3p-weekly.reset_time')"
+  fi
+fi
+
 if [ -n "$__p5" ] || [ -n "$__p7" ]; then
   __reset; printf '\n'
 
   __emit '' ' usage  '
 
-  __emit "$C_SAGE_D" '5h '
-  __emit "$C_SAGE"   "$(__bar "$__p5" "$BAR_W" "$G_FILL" "$G_EMPTY")"
-  __emit "$C_SAGE"   ' '
-  __r5="$(__reset_in "$(__field 'rate_limits.five_hour.resets_at')")"
-  [ -n "$__r5" ] && __emit "$C_SAGE_D" "$(__reset_label "$__r5") "
+  if [ -n "$__p5" ]; then
+    __emit "$C_SAGE_D" '5h '
+    __emit "$C_SAGE"   "$(__bar "$__p5" "$BAR_W" "$G_FILL" "$G_EMPTY")"
+    __emit "$C_SAGE"   ' '
+    __r5="$(__reset_in "$__r5_raw")"
+    [ -n "$__r5" ] && __emit "$C_SAGE_D" "$(__reset_label "$__r5") "
+  fi
 
-  __emit "$C_AMBER_D" '7d '
-  __emit "$C_AMBER"   "$(__bar "$__p7" "$BAR_W" "$G_FILL" "$G_EMPTY")"
-  __emit "$C_AMBER"   ' '
-  __r7="$(__reset_in "$(__field 'rate_limits.seven_day.resets_at')")"
-  [ -n "$__r7" ] && __emit "$C_AMBER_D" "$(__reset_label "$__r7")"
+  if [ -n "$__p7" ]; then
+    __emit "$C_AMBER_D" '7d '
+    __emit "$C_AMBER"   "$(__bar "$__p7" "$BAR_W" "$G_FILL" "$G_EMPTY")"
+    __emit "$C_AMBER"   ' '
+    __r7="$(__reset_in "$__r7_raw")"
+    [ -n "$__r7" ] && __emit "$C_AMBER_D" "$(__reset_label "$__r7")"
+  fi
 fi
 
 # =============================================================================
