@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-#  cockpit-nav - Claude Code statusline (bash)
+#  cockpit-nav - Universal AI Agent statusline (Claude Code, Antigravity CLI, etc.)
 #
 #  Base visual: "Cockpit" by RX
 #      https://statusline.sh/community/cockpit-4shq
 #  Campos trazidos de: "Minimalist (fork)(fork)(fork)" by hieu
 #      https://statusline.sh/community/minimalist-fork-fork-fork-yv5B
-#      -> diretorio, branch do git, tempo para reset dos rate limits
+#      -> diretorio, branch do git, tempo para reset dos rate limits / cotas
 #
-#  Requer jq OU python3 para ler o JSON que o Claude Code manda na stdin.
+#  Requer jq, node OU python3 para ler o JSON recebido na stdin.
 # =============================================================================
 set -u
 LC_ALL=C   # decimais invariantes: sem isso, um locale pt_BR quebra o custo
